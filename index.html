@@ -1,0 +1,163 @@
+<html>
+  <head>
+    <style>
+      /* Some basic styling to make the page look like a terminal */
+      body {
+        font-family: monospace;
+        white-space: pre;
+
+        /* Set the background color to black */
+        background-color: black;
+
+        /* Set the text color to green */
+        color: green;
+      }
+
+      input[type=text] {
+        /* This makes the text box expand to fit the text inside it */
+        width: 100%;
+
+        /* This positions the input element absolutely at the bottom of the page */
+        position: absolute;
+        bottom: 0;
+
+        /* This sets the background color of the input box to black */
+        background-color: black;
+
+        /* This sets the text color of the input box to green */
+        color: green;
+      }
+
+      #output {
+        /* This makes the output area scrollable */
+        height: 300px;
+        overflow-y: scroll;
+
+        /* This positions the output element relatively in the flow of the page */
+        position: relative;
+
+        /* This removes the space between the output and input elements */
+        margin-bottom: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Terminal</h1>
+
+    <!-- This is where the user will enter their commands -->
+    <input type="text" id="command-input" />
+
+    <!-- This is where the output from the commands will be displayed -->
+    <div id="output"></div>
+
+    <script>
+const fileSystem = {
+  bin: {
+    ls: true,
+    cd: true,
+    pwd: true
+  },
+  files: {
+    // Empty directory
+  },
+  conf: {
+    // Empty directory
+  }
+}
+
+// Get a reference to the command input and output elements
+const inputEl = document.getElementById('command-input');
+const outputEl = document.getElementById('output');
+
+// Set the current directory to the root directory
+let currentDirectory = fileSystem;
+
+    // Define the ls, cd, and pwd commands
+    function ls(directory) {
+      // Get the keys of the given directory
+      const keys = Object.keys(directory);
+
+      // Print each key (i.e. each file or directory) to the output
+      keys.forEach(key => outputEl.textContent += `${key}\n`);
+    }
+
+    function cd(directory) {
+  // If the directory is "..", change to the parent directory
+  if (directory === '..') {
+    // Check if the current directory is the root directory or a subdirectory of the root directory
+    if (currentDirectory === fileSystem || Object.keys(currentDirectory).length === 0) {
+      // If the current directory is the root directory or a subdirectory of the root directory, print an error message
+      outputEl.textContent += `Error: cannot change to parent directory from root directory\n`;
+    } else {
+      // Otherwise, change to the parent directory by getting the keys of the current directory and setting the current directory to the first key (which will be the parent directory)
+      const keys = Object.keys(currentDirectory);
+      currentDirectory = currentDirectory[keys[0]];
+    }
+  } else {
+    // Otherwise, check if the current directory is the root directory or a subdirectory of the root directory
+    if (currentDirectory === fileSystem || Object.keys(currentDirectory).length === 0) {
+      // If the current directory is the root directory or a subdirectory of the root directory, print an error message indicating that the given directory does not exist in the current directory
+      outputEl.textContent += `Error: ${directory} - No such directory\n`;
+    } else {
+      // Otherwise, check if the given directory exists in the current directory
+      if (currentDirectory[directory]) {
+        // If the given directory exists, change to that directory
+        currentDirectory = currentDirectory[directory];
+      } else {
+        // Otherwise, print an error message
+        outputEl.textContent += `Error: ${directory} - No such directory\n`;
+      }
+    }
+  }
+}
+
+    function pwd() {
+  // Check if the current directory is the root directory or a subdirectory of the root directory
+  if (currentDirectory === fileSystem || Object.keys(currentDirectory).length === 0) {
+    // If the current directory is the root directory or a subdirectory of the root directory, return "/"
+    outputEl.textContent += '/\n';
+    return;
+  } else {
+    // Otherwise, call the pwd function recursively to get the name of the parent directory
+    pwd();
+
+    // Check if the current directory is not the root directory or a subdirectory of the root directory
+    if (Object.keys(currentDirectory).length > 0) {
+      // If the current directory is not the root directory or a subdirectory of the root directory, print the name of the current directory to the output
+      outputEl.textContent += `/${keys[0]}`;
+    }
+  }
+}
+
+    // Listen for the user to press the enter key in the input box
+    inputEl.addEventListener('keydown', event => {
+      // Check if the user pressed the enter key
+      if (event.keyCode === 13) {
+        // Get the input text
+        const input = inputEl.value;
+
+        // Print the input to the output
+        outputEl.textContent += `$ ${input}\n`;
+
+        // Clear the input box
+        inputEl.value = '';
+
+
+    // Split the input into command and argument
+    const [command, ...args] = input.split(' ');
+
+    // Check the command and call the corresponding function
+    if (command === 'ls') {
+      ls(currentDirectory);
+    } else if (command === 'cd') {
+      cd(args[0]);
+    } else if (command === 'pwd') {
+      pwd();
+    } else {
+      outputEl.textContent += `Error: ${command} - Unrecognized command\n`;
+    }
+  }
+});
+</script>
+</body>
+</html>
